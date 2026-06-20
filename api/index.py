@@ -24,7 +24,17 @@ with open("q-vercel-latency.json", "r") as f:
 class RequestData(BaseModel):
     regions: list[str]
     threshold_ms: int
+from fastapi import Response
 
+@app.options("/")
+async def options_handler():
+    return Response(
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 @app.post("/")
 def analyse(data: RequestData):
 
