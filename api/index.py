@@ -6,24 +6,23 @@ import numpy as np
 
 app = FastAPI()
 
-# CORS
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["Access-Control-Allow-Origin"],
 )
 
-# Handle OPTIONS requests
+# Handle preflight requests
 @app.options("/")
 async def options_handler():
     return Response(
         headers={
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Headers": "*",
         }
     )
 
@@ -43,7 +42,10 @@ def analyse(data: RequestData):
 
     for region in data.regions:
 
-        rows = [r for r in telemetry if r["region"] == region]
+        rows = [
+            r for r in telemetry
+            if r["region"] == region
+        ]
 
         if not rows:
             continue
@@ -61,4 +63,6 @@ def analyse(data: RequestData):
             )
         }
 
-    return results
+    return {
+        "regions": results
+    }
