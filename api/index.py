@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
@@ -6,6 +6,7 @@ import numpy as np
 
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,31 +15,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(rest_of_path: str):
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        },
-    )
-
+# Load telemetry data
 with open("q-vercel-latency.json", "r") as f:
     telemetry = json.load(f)
+
 
 class RequestData(BaseModel):
     regions: list[str]
     threshold_ms: int
 
+
 @app.post("/")
-@app.post("")
-def analyse(data: RequestData):
+async def analyse(data: RequestData):
     results = {}
 
     for region in data.regions:
-        rows = [r for r in telemetry if r["region"] == region]
+        rows = [
+            r for r in telemetry
+            if r["region"] == region
+        ]
 
         if not rows:
             continue
