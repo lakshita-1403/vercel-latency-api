@@ -36,6 +36,7 @@ async def options_handler():
         }
     )
 @app.post("/")
+@app.post("")
 def analyse(data: RequestData):
 
     results = {}
