@@ -6,27 +6,25 @@ import numpy as np
 
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Handle preflight requests
-@app.options("/")
-async def options_handler():
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(rest_of_path: str):
     return Response(
+        status_code=200,
         headers={
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
             "Access-Control-Allow-Headers": "*",
-        }
+        },
     )
 
-# Load telemetry data
 with open("q-vercel-latency.json", "r") as f:
     telemetry = json.load(f)
 
@@ -37,15 +35,10 @@ class RequestData(BaseModel):
 @app.post("/")
 @app.post("")
 def analyse(data: RequestData):
-
     results = {}
 
     for region in data.regions:
-
-        rows = [
-            r for r in telemetry
-            if r["region"] == region
-        ]
+        rows = [r for r in telemetry if r["region"] == region]
 
         if not rows:
             continue
